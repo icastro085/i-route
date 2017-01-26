@@ -17,7 +17,7 @@ IRoute.prototype.add = function(path){
 
     for(i = 1 ; i < arguments.length ; i++){
         this.routes.push({
-            path: path,
+            path: this.normalizePath(path),
             callback: arguments[i]
         });
     }
@@ -35,21 +35,6 @@ IRoute.prototype.execute = function(path){
     if(total){
         this.executeNext(request, routes, 0, total, options);
     }
-};
-
-IRoute.prototype.normalizePath = function(path){
-
-    path = path.split('?')[0];
-
-    if(!/^\//.test(path)){
-        path = '/' + path;
-    }
-
-    if(/\/$/.test(path)){
-        path = path.substring(0, path.length - 1);
-    }
-
-    return path;
 };
 
 IRoute.prototype.executeNext = function(request, routes, index, total, options){
@@ -83,6 +68,11 @@ IRoute.prototype.get = function(path){
 };
 
 IRoute.prototype.comparePaths = function(path, route){
+
+    if(route.path === '*'){
+        return true;
+    }
+
     var regexp = this.getRegExpPath(route.path);
     return regexp.test(path);
 };
@@ -101,14 +91,45 @@ IRoute.prototype.getRegExpPath = function(path){
 
 IRoute.prototype.getRequest = function(path){
     return {
+        originalPath: path,
         path: this.normalizePath(path),
         param: this.getParam(),
         query: this.getQuery(path)
     };
 };
 
+IRoute.prototype.normalizePath = function(path){
+
+    if(path instanceof RegExp){
+        return path;
+    }
+
+    path = (path || '').trim();
+
+    if(path === '*'){
+        return path;
+    }
+
+    path = path.split('?')[0];
+
+    if(!/^\//.test(path)){
+        path = '/' + path;
+    }
+
+    if(/\/$/.test(path)){
+        path = path.substring(0, path.length - 1);
+    }
+
+    return path;
+};
+
 IRoute.prototype.getParam = function(path, route){
-    if(!path || !route || typeof route.path !== 'string'){
+    if(
+        !path ||
+        !route ||
+        typeof route.path !== 'string' ||
+        route.path === '*'
+    ){
         return {};
     }
 

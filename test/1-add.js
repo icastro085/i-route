@@ -4,29 +4,34 @@ var IRoute = require('./../src/i-route.js');
 
 describe('IRoute #add', function() {
 
+    var route;
+    beforeEach(function(){
+        route = new IRoute();
+    });
+
     describe('When I add a route', function(){
 
-        var route;
-        beforeEach(function(){
-            route = new IRoute();
-        });
-
-        it('should have a just 1 route', function(done){
+        it('should have a just 1 route', function(){
 
             route.add('/teste/1', function(){});
             expect(route.routes.length).to.equal(1);
-            done();
+
+        });
+
+        it('should have a just 1 route with regexp', function(){
+
+            var count = 0;
+            route.add(/\/teste\/[0-9]+/, function(request){
+                count++;
+            });
+            route.execute('/teste/1');
+            expect(count).to.equal(1);
 
         });
 
     });
 
     describe('When I add 2 route', function(){
-
-        var route;
-        beforeEach(function(){
-            route = new IRoute();
-        });
 
         it('should just execute first', function(){
 
@@ -79,5 +84,26 @@ describe('IRoute #add', function() {
             expect(count).to.equal(2);
 
         });
+    });
+
+    describe('When I add a route for all', function(){
+
+        it('should all routes', function(){
+
+            var count = 0
+
+            route.add('*', function(request, next){
+                count++;
+                next();
+            });
+            route.add('/teste/:id', function(){
+                count++;
+            });
+            route.execute('/teste/1');
+
+            expect(count).to.equal(2);
+
+        });
+
     });
 });
