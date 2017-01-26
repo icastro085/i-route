@@ -2,7 +2,7 @@
 
 var IRoute = require('./../src/i-route.js');
 
-describe('IRoute #params', function() {
+describe('IRoute #param', function() {
 
     describe('When I add a route with 1 param', function(){
 
@@ -57,8 +57,8 @@ describe('IRoute #params', function() {
             var name;
 
             route.add('/teste/:id/teste/:name', function(request, next){
-                id = request.params.id;
-                name = request.params.name;
+                id = request.param.id;
+                name = request.param.name;
             });
 
             route.execute('/teste/1/teste/testename');
@@ -72,8 +72,8 @@ describe('IRoute #params', function() {
             var name;
 
             route.add('/teste/:id/teste/:name?', function(request, next){
-                id = request.params.id;
-                name = request.params.name;
+                id = request.param.id;
+                name = request.param.name;
             });
 
             route.execute('/teste/1/teste');
