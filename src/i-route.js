@@ -26,6 +26,9 @@ IRoute.prototype.add = function(path){
 };
 
 IRoute.prototype.execute = function(path){
+
+    path = this.normalizePath(path);
+
     var routes = this.get(path);
     var total = routes.length;
     var request = this.getRequest(path);
@@ -36,9 +39,21 @@ IRoute.prototype.execute = function(path){
     }
 };
 
+IRoute.prototype.normalizePath = function(path){
+    if(!/^\//.test(path)){
+        path = '/' + path;
+    }
+
+    if(/\/$/.test(path)){
+        path = path.substring(0, path.length - 1);
+    }
+
+    return path;
+};
+
 IRoute.prototype.executeNext = function(request, routes, index, total, options){
 
-    if(options.redirect){
+    if(options && options.redirect){
 
     }
 
@@ -102,9 +117,11 @@ IRoute.prototype.getParams = function(path, route){
     var result = {};
     var name;
 
-    for(i = 0 ; i < params.length ; i++){
-        name  = params[i].replace(/^:/, '');
-        result[name] = values[i + 1];
+    if(params && params.length){
+        for(i = 0 ; i < params.length ; i++){
+            name  = params[i].replace(/^:/, '');
+            result[name] = values[i + 1];
+        }
     }
 
     return result;
