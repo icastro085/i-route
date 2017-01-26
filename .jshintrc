@@ -1,0 +1,27 @@
+{
+    "eqeqeq": true,
+    "forin": false,
+    "freeze": false,
+    "funcscope": true,
+    "latedef": true,
+    "maxdepth": 4,
+    "noarg": false,
+    "nocomma": false,
+    "nonbsp": true,
+    "nonew": false,
+    "notypeof": true,
+    "shadow": true,
+    "strict": true,
+    "undef": true,
+    "unused": true,
+    "mocha": true,
+    "node": true,
+    "jasmine": true,
+    "globals": {
+        "clearTimeout": true,
+        "setTimeout": true,
+        "module": true,
+        "window": true,
+        "assert": true
+    }
+}

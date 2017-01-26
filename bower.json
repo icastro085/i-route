@@ -1,0 +1,19 @@
+{
+  "name": "i-route",
+  "description": "",
+  "main": "dist/i-route.js",
+  "authors": [
+    "Ivanildo de Castro"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/icastro085/i-route",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "src",
+    "gulpfile.js",
+    "package.json"
+  ]
+}
