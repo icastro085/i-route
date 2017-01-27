@@ -81,11 +81,11 @@ IRoute.prototype.getRegExpPath = function(path){
     var regexp = path;
 
     if(typeof regexp === 'string'){
-        regexp = regexp.replace(/(\/\:\w+)\?/g, '($1)?');
-        regexp = regexp.replace(/\:\w+/g, '(\\w+)');
-        regexp = new RegExp('^[\/]?'+regexp+'$', 'gi');
+        regexp = regexp.replace(/(\/\:[^/]+)\?/g, '($1)?');
+        regexp = regexp.replace(/\:[^/)]+/g, '([^/)]+)');
+        regexp = new RegExp('^'+regexp+'$', 'gi');
     }
-    
+
     return regexp;
 };
 
@@ -136,7 +136,7 @@ IRoute.prototype.getParam = function(path, route){
     }
 
     var regexp = this.getRegExpPath(route.path);
-    var params = route.path.match(/\:\w+/g);
+    var params = route.path.match(/\:[^/]+/g);
     var values = regexp.exec(path);
     var i;
     var result = {};
@@ -157,7 +157,7 @@ IRoute.prototype.getQuery = function(path){
     var query = {};
 
     if(queryString){
-        queryString.match(/\w+\=[^&=]+/g).map(function(item){
+        queryString.match(/[^&=]+\=[^&=]+/g).map(function(item){
             var parts = item.split('=');
             query[parts[0]] = parts[1];
         });
