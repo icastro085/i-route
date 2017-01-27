@@ -6,11 +6,21 @@
  * @license MIT
  */
 function IRoute(options){
-    this.options = options;
     this.routes = [];
+    this.setOptions(options);
 }
 
 IRoute.prototype.routes = [];
+
+IRoute.prototype.options = {};
+
+IRoute.prototype.setOptions = function(options){
+    this.options = options || {};
+};
+
+IRoute.prototype.getOptions = function(){
+    return this.options;
+};
 
 IRoute.prototype.add = function(path){
     var i;
@@ -28,12 +38,18 @@ IRoute.prototype.add = function(path){
 IRoute.prototype.execute = function(path){
 
     var request = this.getRequest(path);
-    var routes = this.get(request.path);
+    var routes = this.get(request);
     var total = routes.length;
     var options = {};
 
     if(total){
-        this.executeNext(request, routes, 0, total, options);
+        this.executeNext(
+            request,
+            routes,
+            0,
+            total,
+            options
+        );
     }
 };
 
@@ -61,13 +77,20 @@ IRoute.prototype.executeNext = function(request, routes, index, total, options){
 
 };
 
-IRoute.prototype.get = function(path){
+IRoute.prototype.get = function(request){
     return this.routes.filter(
-        this.comparePaths.bind(this, path)
+        this.comparePaths.bind(this, request.basePath + request.path)
     );
 };
 
 IRoute.prototype.comparePaths = function(path, route){
+
+    if(route.callback instanceof IRoute){
+        console.log(path, route);
+        route.getOptions().basePath += this.getOptions().basePath;
+        route.execute(path);
+        return false;
+    }
 
     if(route.path === '*'){
         return true;
@@ -91,8 +114,9 @@ IRoute.prototype.getRegExpPath = function(path){
 
 IRoute.prototype.getRequest = function(path){
     return {
-        originalPath: path,
+        basePath: this.normalizePath(this.options.basePath || ''),
         path: this.normalizePath(path),
+        originalPath: path,
         param: this.getParam(),
         query: this.getQuery(path)
     };
@@ -106,7 +130,7 @@ IRoute.prototype.normalizePath = function(path, notSplitQuery){
 
     path = (path || '').trim();
 
-    if(path === '*'){
+    if(path === '*' || !path){
         return path;
     }
 
