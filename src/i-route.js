@@ -17,7 +17,7 @@ IRoute.prototype.add = function(path){
 
     for(i = 1 ; i < arguments.length ; i++){
         this.routes.push({
-            path: this.normalizePath(path),
+            path: this.normalizePath(path, true),
             callback: arguments[i]
         });
     }
@@ -85,7 +85,7 @@ IRoute.prototype.getRegExpPath = function(path){
         regexp = regexp.replace(/\:\w+/g, '(\\w+)');
         regexp = new RegExp('^[\/]?'+regexp+'$', 'gi');
     }
-
+    
     return regexp;
 };
 
@@ -98,7 +98,7 @@ IRoute.prototype.getRequest = function(path){
     };
 };
 
-IRoute.prototype.normalizePath = function(path){
+IRoute.prototype.normalizePath = function(path, notSplitQuery){
 
     if(path instanceof RegExp){
         return path;
@@ -110,7 +110,9 @@ IRoute.prototype.normalizePath = function(path){
         return path;
     }
 
-    path = path.split('?')[0];
+    if(!notSplitQuery){
+        path = path.split('?')[0];
+    }
 
     if(!/^\//.test(path)){
         path = '/' + path;

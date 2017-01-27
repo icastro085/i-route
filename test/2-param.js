@@ -66,7 +66,7 @@ describe('IRoute #param', function() {
             expect(name).to.equal('testename');
         });
 
-        it.only('and I have optional param', function(){
+        it('and I have optional param', function(){
             var count=0;
             var id;
             var name;
