@@ -87,14 +87,14 @@ describe('IRoute #add', function() {
         });
     });
 
-    describe('When I add a route for all', function(){
+    describe('When I add a sub route', function(){
 
         var route2;
         beforeEach(function(){
             route2 = new IRoute();
         });
 
-        it('should all routes', function(){
+        it('should just sub callback', function(){
 
             var spy = chai.spy();
 
@@ -102,6 +102,54 @@ describe('IRoute #add', function() {
             route.add('/teste/:id', route2);
 
             route.execute('/teste/1/editar');
+
+            expect(spy).to.have.been.called();
+
+        });
+
+        it('should parent calback and  sub callback', function(){
+
+            var spy1 = chai.spy();
+            var spy2 = chai.spy();
+
+            route.add('/teste/:id', spy1);
+
+            route2.add('/editar', spy2);
+            route.add('/teste/:id', route2);
+
+            route.execute('/teste/1/editar');
+            route.execute('/teste/1');
+
+            expect(spy1).to.have.been.called();
+            expect(spy2).to.have.been.called();
+
+        });
+
+        it('should sub callback of other sub callback', function(){
+
+            var route3 = new IRoute();
+            var spy = chai.spy();
+
+            route3.add('/clone', spy);
+            route2.add('/editar', route3);
+            route.add('/teste/:id', route2);
+
+            route.execute('/teste/1/editar/clone');
+
+            expect(spy).to.have.been.called();
+
+        });
+
+        it.only('should sub callback with the parent path like RegExp', function(){
+
+            var route3 = new IRoute();
+            var spy = chai.spy();
+
+            route3.add('/clone', spy);
+            route2.add(/^\/editar/, route3);
+            route.add(/^\/teste\/[0-9]+/, route2);
+
+            route.execute('/teste/1/editar/clone');
 
             expect(spy).to.have.been.called();
 
