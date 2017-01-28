@@ -7,10 +7,12 @@
  */
 function IRoute(options){
     this.routes = [];
+    this.middleware = [];
     this.setOptions(options);
 }
 
 IRoute.prototype.routes = [];
+IRoute.prototype.middleware = [];
 
 IRoute.prototype.options = {};
 
@@ -25,13 +27,33 @@ IRoute.prototype.getOptions = function(){
 };
 
 IRoute.prototype.add = function(path){
-    var i;
 
-    for(i = 1 ; i < arguments.length ; i++){
-        this.routes.push({
-            path: this.normalizePath(path, true),
-            callback: arguments[i]
-        });
+    var isMiddleware = !(
+        typeof path === 'string' ||
+        path instanceof RegExp
+    );
+
+    var i = 1;
+
+    if(isMiddleware){
+        i = 0;
+        path = '*';
+
+        for(; i < arguments.length ; i++){
+            this.middleware.push({
+                callback: arguments[i]
+            });
+        }
+
+    }else{
+
+        for(; i < arguments.length ; i++){
+            this.routes.push({
+                path: this.normalizePath(path, true),
+                callback: arguments[i],
+                isMiddleware: isMiddleware
+            });
+        }
     }
 
     return this;
@@ -55,28 +77,65 @@ IRoute.prototype.execute = function(path){
     }
 };
 
-IRoute.prototype.executeNext = function(request, routes, index, total, options){
+IRoute.prototype.executeNext = function(
+    request,
+    routes,
+    index,
+    total,
+    options
+){
 
     if(options && options.redirect){
 
     }
 
     if(index < total){
+
         var route = routes[index];
         request.param = this.getParam(request.path, route);
 
-        route.callback(
+        var next = this.executeNext.bind(
+            this,
             request,
-            this.executeNext.bind(
+            routes,
+            index + 1,
+            total
+        );
+
+        var callback = this.work.bind(this, route.callback, request, next);
+
+        if(this.middleware && this.middleware.length){
+            this.executeMiddleware(request, callback);
+        }else{
+            callback();
+        }
+
+    }
+
+};
+
+IRoute.prototype.work = function(callback, request, next){
+    callback(
+        request,
+        next
+    );
+};
+
+IRoute.prototype.executeMiddleware = function(request, callback){
+    var middleware = [];
+
+    for(var i = this.middleware.length - 1 ; i >= 0 ; i--){
+        middleware.unshift(
+            this.work.bind(
                 this,
+                this.middleware[i].callback,
                 request,
-                routes,
-                index + 1,
-                total
+                middleware[i + 1] || callback
             )
         );
     }
 
+    middleware[0]();
 };
 
 IRoute.prototype.get = function(request){

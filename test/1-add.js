@@ -140,7 +140,7 @@ describe('IRoute #add', function() {
 
         });
 
-        it.only('should sub callback with the parent path like RegExp', function(){
+        it('should sub callback with the parent path like RegExp', function(){
 
             var route3 = new IRoute();
             var spy = chai.spy();
@@ -155,5 +155,31 @@ describe('IRoute #add', function() {
 
         });
 
+    });
+
+    describe('When I add a middleware', function(){
+        it('should execute in order', function(){
+
+            function callback(request, next){
+                next();
+            }
+
+            var spy1 = chai.spy(callback);
+            var spy2 = chai.spy(callback);
+            var spy3 = chai.spy(callback);
+
+            route.add(spy1);
+            route.add('/teste/:id', spy2);
+            route.add('/teste/:id', spy3);
+
+            route.execute('/teste/1');
+
+            expect(spy1).to.have.been.called();
+            expect(spy2).to.have.been.called();
+            expect(spy3).to.have.been.called();
+
+            expect(spy1).to.have.been.called.twice;
+
+        });
     });
 });
