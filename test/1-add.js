@@ -20,12 +20,12 @@ describe('IRoute #add', function() {
 
         it('should have a just 1 route with regexp', function(){
 
-            var count = 0;
-            route.add(/\/teste\/[0-9]+/, function(request){
-                count++;
-            });
+            var spy = chai.spy();
+
+            route.add(/\/teste\/[0-9]+/, spy);
             route.execute('/teste/1');
-            expect(count).to.equal(1);
+
+            expect(spy).to.have.been.called();
 
         });
 
@@ -35,53 +35,54 @@ describe('IRoute #add', function() {
 
         it('should just execute first', function(){
 
-            var count = 0;
-            var callback = function(request, next){
-                count++;
+            function callback(request, next){
                 next();
-            };
+            }
 
-            route.add('/teste/1', callback);
-            route.add('/teste/2', callback);
+            var spy1 = chai.spy(callback);
+            var spy2 = chai.spy(callback);
+
+            route.add('/teste/1', spy1);
+            route.add('/teste/2', spy2);
             route.execute('/teste/1');
 
-            expect(count).to.equal(1);
+            expect(spy1).to.have.been.called();
+            expect(spy2).to.not.have.been.called();
 
         });
 
         it('should execute both', function(){
 
-            var count = 0;
-            var callback = function(request, next){
-                count++;
+            function callback(request, next){
                 next();
-            };
+            }
 
-            route.add('/teste/1', callback);
-            route.add('/teste/1', callback);
+            var spy1 = chai.spy(callback);
+            var spy2 = chai.spy(callback);
+
+            route.add('/teste/1', spy1);
+            route.add('/teste/1', spy2);
             route.execute('/teste/1');
 
-            expect(count).to.equal(2);
+            expect(spy1).to.have.been.called();
+            expect(spy2).to.have.been.called();
 
         });
 
         it('should execute both that was not defined separate', function(){
 
-            var count = 0;
+            function callback(request, next){
+                next();
+            }
 
-            route.add('/teste/1',
-                function(request, next){
-                    count++;
-                    next();
-                },
-                function(request, next){
-                    count++;
-                    next();
-                }
-            );
+            var spy1 = chai.spy(callback);
+            var spy2 = chai.spy(callback);
 
+            route.add('/teste/1', spy1, spy2);
             route.execute('/teste/1');
-            expect(count).to.equal(2);
+
+            expect(spy1).to.have.been.called();
+            expect(spy2).to.have.been.called();
 
         });
     });
@@ -93,19 +94,16 @@ describe('IRoute #add', function() {
             route2 = new IRoute();
         });
 
-        it.only('should all routes', function(){
+        it('should all routes', function(){
 
-            var count = 0
+            var spy = chai.spy();
 
-            route2.add('/editar', function(){
-                console.log(1);
-                count++;
-            });
+            route2.add('/editar', spy);
             route.add('/teste/:id', route2);
 
             route.execute('/teste/1/editar');
 
-            //expect(count).to.equal(1);
+            expect(spy).to.have.been.called();
 
         });
 

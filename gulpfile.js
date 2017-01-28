@@ -11,12 +11,15 @@ var sequence = require('gulp-sequence');
 require('gulp-release-it')(gulp);
 
 var chai = require('chai');
+var spies = require('chai-spies');
+
+chai.use(spies);
 
 //define a global function for use in test
 global.expect = chai.expect;
 global.assert = chai.assert;
 global.should = chai.should;
-
+global.chai = chai;
 
 gulp.task('default', [
     'build'

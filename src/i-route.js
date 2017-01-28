@@ -15,7 +15,9 @@ IRoute.prototype.routes = [];
 IRoute.prototype.options = {};
 
 IRoute.prototype.setOptions = function(options){
-    this.options = options || {};
+    this.options = options || {
+        basePath: ''
+    };
 };
 
 IRoute.prototype.getOptions = function(){
@@ -79,16 +81,21 @@ IRoute.prototype.executeNext = function(request, routes, index, total, options){
 
 IRoute.prototype.get = function(request){
     return this.routes.filter(
-        this.comparePaths.bind(this, request.basePath + request.path)
+        this.comparePaths.bind(this, request.path)
     );
 };
 
 IRoute.prototype.comparePaths = function(path, route){
+    var regexp;
 
     if(route.callback instanceof IRoute){
-        console.log(path, route);
-        route.getOptions().basePath += this.getOptions().basePath;
-        route.execute(path);
+        var iroute = route.callback;
+        regexp = this.getRegExpPath(route.path, true);
+
+        if(regexp.test(path)){
+            iroute.execute(path.replace(regexp, ''));
+        }
+
         return false;
     }
 
@@ -96,17 +103,17 @@ IRoute.prototype.comparePaths = function(path, route){
         return true;
     }
 
-    var regexp = this.getRegExpPath(route.path);
+    regexp = this.getRegExpPath(route.path);
     return regexp.test(path);
 };
 
-IRoute.prototype.getRegExpPath = function(path){
+IRoute.prototype.getRegExpPath = function(path, withoutEnd){
     var regexp = path;
 
     if(typeof regexp === 'string'){
         regexp = regexp.replace(/(\/\:[^/]+)\?/g, '($1)?');
         regexp = regexp.replace(/\:[^/)]+/g, '([^/)]+)');
-        regexp = new RegExp('^'+regexp+'$', 'gi');
+        regexp = new RegExp('^'+regexp + (withoutEnd?'':'$'), 'gi');
     }
 
     return regexp;
