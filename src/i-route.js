@@ -242,6 +242,19 @@ IRoute.prototype.getQuery = function(path){
     return query;
 };
 
+IRoute.prototype.run = function(){
+    window.addEventListener('hashchange', this.runExcute.bind(this));
+    this.runExcute()
+};
+
+IRoute.prototype.runExcute = function(){
+    this.execute(this.getOriginalPath());
+};
+
+IRoute.prototype.getOriginalPath = function(){
+    return window.location.hash.replace('#', '');
+};
+
 if(typeof module !== 'undefined'){
     module.exports = IRoute;
 }else{
