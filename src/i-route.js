@@ -255,6 +255,10 @@ IRoute.prototype.getOriginalPath = function(){
     return window.location.hash.replace('#', '');
 };
 
+IRoute.prototype.redirect = function(path){
+    window.location.hash = '#' + this.normalizePath(path);
+};
+
 if(typeof module !== 'undefined'){
     module.exports = IRoute;
 }else{
