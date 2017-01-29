@@ -12,6 +12,7 @@ function IRoute(options){
 }
 
 IRoute.prototype.routes = [];
+
 IRoute.prototype.middleware = [];
 
 IRoute.prototype.options = {};
@@ -241,7 +242,7 @@ IRoute.prototype.getQuery = function(path){
     return query;
 };
 
-if(module && module.exports){
+if(typeof module !== 'undefined'){
     module.exports = IRoute;
 }else{
     window.IRoute = IRoute;
