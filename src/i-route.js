@@ -62,7 +62,7 @@ IRoute.prototype.add = function(path){
 IRoute.prototype.execute = function(path){
 
     var request = this.getRequest(path);
-    var routes = this.get(request);
+    var routes = this.getValidRoutes(request);
     var total = routes.length;
     var options = {};
 
@@ -102,23 +102,33 @@ IRoute.prototype.executeNext = function(
             total
         );
 
-        var callback = this.work.bind(this, route.callback, request, next);
+        var callback = this.work(route.callback, request, next);
 
         if(this.middleware && this.middleware.length){
             this.executeMiddleware(request, callback);
         }else{
             callback();
         }
-
     }
-
 };
 
 IRoute.prototype.work = function(callback, request, next){
-    callback(
-        request,
-        next
+
+    var hasPrototype = !!(
+        callback.prototype &&
+        Object.keys(callback.prototype).length
     );
+
+    return function(){
+        if(hasPrototype){
+            new callback(request, next);
+        }else{
+            callback(
+                request,
+                next
+            );
+        }
+    }.bind(this);
 };
 
 IRoute.prototype.executeMiddleware = function(request, callback){
@@ -126,8 +136,7 @@ IRoute.prototype.executeMiddleware = function(request, callback){
 
     for(var i = this.middleware.length - 1 ; i >= 0 ; i--){
         middleware.unshift(
-            this.work.bind(
-                this,
+            this.work(
                 this.middleware[i].callback,
                 request,
                 middleware[i + 1] || callback
@@ -138,7 +147,7 @@ IRoute.prototype.executeMiddleware = function(request, callback){
     middleware[0]();
 };
 
-IRoute.prototype.get = function(request){
+IRoute.prototype.getValidRoutes = function(request){
     return this.routes.filter(
         this.comparePaths.bind(this, request.path)
     );
