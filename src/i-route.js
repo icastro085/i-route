@@ -63,54 +63,44 @@ IRoute.prototype.execute = function(path){
 
     var request = this.getRequest(path);
     var routes = this.getValidRoutes(request);
-    var total = routes.length;
-    var options = {};
+    var next = function(){};
+    var i;
 
-    if(total){
-        this.executeNext(
+    for(i = routes.length - 1 ; i >= 0 ; i--){
+        next = this.executeNext.bind(
+            this,
+            routes[i],
             request,
-            routes,
-            0,
-            total,
-            options
+            next
         );
     }
+
+    next();
 };
 
-IRoute.prototype.executeNext = function(
-    request,
-    routes,
-    index,
-    total,
-    options
-){
+IRoute.prototype.executeNext = function(route, request, next){
+    request.param = this.getParam(request.path, route);
+    request.route = route;
 
-    if(options && options.redirect){
+    this.executeMiddleware(
+        request,
+        this.work(route.handle, request, next)
+    );
+};
 
-    }
+IRoute.prototype.executeMiddleware = function(request, next){
 
-    if(index < total){
+    var i;
 
-        var route = routes[index];
-        request.param = this.getParam(request.path, route);
-        request.route = route;
-
-        var next = this.executeNext.bind(
-            this,
+    for(i = this.middleware.length - 1 ; i >= 0 ; i--){
+        next = this.work(
+            this.middleware[i].handle,
             request,
-            routes,
-            index + 1,
-            total
-        );
-
-        var handle = this.work(route.handle, request, next);
-
-        if(this.middleware && this.middleware.length){
-            this.executeMiddleware(request, handle);
-        }else{
-            handle();
-        }
+            next
+        )
     }
+
+    next();
 };
 
 IRoute.prototype.work = function(handle, request, next){
@@ -120,7 +110,7 @@ IRoute.prototype.work = function(handle, request, next){
         Object.keys(handle.prototype).length
     );
 
-    return function(){
+    return function Next(){
         if(hasPrototype){
             new handle(request, next);
         }else{
@@ -129,24 +119,7 @@ IRoute.prototype.work = function(handle, request, next){
                 next
             );
         }
-    }.bind(this);
-};
-
-IRoute.prototype.executeMiddleware = function(request, handle){
-    var middleware = [];
-    delete request.route;
-
-    for(var i = this.middleware.length - 1 ; i >= 0 ; i--){
-        middleware.unshift(
-            this.work(
-                this.middleware[i].handle,
-                request,
-                middleware[i + 1] || handle
-            )
-        );
-    }
-
-    middleware[0]();
+    };
 };
 
 IRoute.prototype.getValidRoutes = function(request){
