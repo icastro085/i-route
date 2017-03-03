@@ -62,7 +62,7 @@ gulp.task('uglify', function() {
         preserveComments: 'license'
     };
 
-    return gulp.src(['dist/i-promise.js'])
+    return gulp.src(['dist/i-route.js'])
         .pipe(uglify(options))
         .pipe(rename(function(path){
             path.basename += '.min';
@@ -72,7 +72,7 @@ gulp.task('uglify', function() {
 
 gulp.task('concat', function() {
     return gulp.src(['src/**/*.js'])
-        .pipe(concat('i-promise.js'))
+        .pipe(concat('i-route.js'))
         .pipe(concat.header(readLicense() + '!function(){\n'))
         .pipe(concat.footer('}();'))
         .pipe(gulp.dest('dist'));

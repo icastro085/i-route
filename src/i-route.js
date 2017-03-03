@@ -34,21 +34,16 @@ IRoute.prototype.add = function(path){
         path instanceof RegExp
     );
 
-    var i = 1;
+    var i;
 
     if(isMiddleware){
-        i = 0;
-        path = '*';
-
-        for(; i < arguments.length ; i++){
+        for(i = 0; i < arguments.length ; i++){
             this.middleware.push({
                 handle: arguments[i]
             });
         }
-
     }else{
-
-        for(; i < arguments.length ; i++){
+        for(i = 1; i < arguments.length ; i++){
             this.routes.push({
                 path: this.normalizePath(path, true),
                 handle: arguments[i],
@@ -165,7 +160,9 @@ IRoute.prototype.getRegExpPath = function(path, withoutEnd){
 
 IRoute.prototype.getRequest = function(path){
     return {
-        basePath: this.normalizePath(this.options.basePath || ''),
+        basePath: this.normalizePath(
+            this.getOptions().basePath || ''
+        ),
         path: this.normalizePath(path),
         originalPath: path,
         param: this.getParam(),
@@ -244,7 +241,7 @@ IRoute.prototype.getQuery = function(path){
 
 IRoute.prototype.run = function(){
     window.addEventListener('hashchange', this.runExcute.bind(this));
-    this.runExcute()
+    this.runExcute();
 };
 
 IRoute.prototype.runExcute = function(){
